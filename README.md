@@ -1,6 +1,6 @@
 # 企业知识库 RAG 智能问答 Agent
 
-《AI大模型》课程期末作业 —— 基于通义千问 + LangChain + Chroma + Streamlit 的检索增强生成问答系统
+《AI大模型》课程期末作业 —— 基于通义千问 + LangChain + Chroma + Streamlit / FastAPI 的检索增强生成问答系统
 
 ## 功能概述
 
@@ -26,9 +26,31 @@ pip install -r requirements.txt
 
 ### 2. 启动系统
 
+启动 Streamlit 页面：
+
 ```bash
 streamlit run app.py
 ```
+
+或启动 FastAPI 后端：
+
+```powershell
+$env:DASHSCOPE_API_KEY="你的 API Key"
+uvicorn api_server:app --host 0.0.0.0 --port 8000 --reload
+```
+
+启动后可访问 `http://localhost:8000/docs` 调试接口。
+
+FastAPI 提供以下核心接口：
+
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| `GET` | `/health` | 健康检查 |
+| `POST` | `/api/v1/documents` | 上传 TXT / PDF / MD 并入库 |
+| `GET` | `/api/v1/knowledge-base` | 查询知识库状态 |
+| `DELETE` | `/api/v1/knowledge-base` | 清空知识库 |
+| `POST` | `/api/v1/chat` | RAG 问答，通过 `session_id` 保持多轮记忆 |
+| `DELETE` | `/api/v1/sessions/{session_id}` | 清空指定会话 |
 
 ### 3. 使用流程
 
@@ -42,6 +64,7 @@ streamlit run app.py
 ```
 RAGagent/
 ├── app.py                     # Streamlit 主程序入口
+├── api_server.py              # FastAPI 后端入口
 ├── requirements.txt           # Python 依赖清单
 ├── models/
 │   ├── __init__.py
