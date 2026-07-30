@@ -4,6 +4,7 @@
 通过 langchain_chroma.Chroma 管理向量库生命周期
 """
 import os
+from collections import defaultdict
 from typing import List, Dict, Any
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
@@ -121,6 +122,80 @@ class VectorStore:
         return "\n\n---\n\n".join(parts)
 
     # ── 集合管理 ──────────────────────────────
+
+    def list_documents(self) -> List[Dict[str, Any]]:
+        """按来源聚合知识库中的文档及片段统计。"""
+        try:
+            data = self._vectorstore.get(include=["documents", "metadatas"])
+        except Exception:
+            return []
+
+        grouped: Dict[str, Dict[str, Any]] = defaultdict(
+            lambda: {
+                "source": "未知来源",
+                "chunk_count": 0,
+                "char_count": 0,
+                "file_type": "",
+                "ingested_at": "",
+            }
+        )
+        documents = data.get("documents", []) or []
+        metadatas = data.get("metadatas", []) or []
+        for content, metadata in zip(documents, metadatas):
+            metadata = metadata or {}
+            source = str(metadata.get("source", "未知来源"))
+            item = grouped[source]
+            item["source"] = source
+            item["chunk_count"] += 1
+            item["char_count"] += len(content or "")
+            item["file_type"] = str(metadata.get("file_type", ""))
+            ingested_at = str(metadata.get("ingested_at", ""))
+            if ingested_at > item["ingested_at"]:
+                item["ingested_at"] = ingested_at
+        return sorted(grouped.values(), key=lambda item: item["source"].lower())
+
+    def get_document_chunks(
+        self,
+        source: str,
+        limit: int = 100,
+    ) -> List[Dict[str, Any]]:
+        """获取指定来源的片段，供知识库预览与排障使用。"""
+        safe_limit = max(1, min(limit, 500))
+        try:
+            data = self._vectorstore.get(
+                where={"source": source},
+                include=["documents", "metadatas"],
+            )
+        except Exception:
+            return []
+
+        chunks = []
+        for item_id, content, metadata in zip(
+            data.get("ids", []) or [],
+            data.get("documents", []) or [],
+            data.get("metadatas", []) or [],
+        ):
+            metadata = metadata or {}
+            chunks.append({
+                "id": item_id,
+                "content": content or "",
+                "char_count": len(content or ""),
+                "chunk_index": int(metadata.get("chunk_index", len(chunks))),
+                "metadata": metadata,
+            })
+        chunks.sort(key=lambda item: item["chunk_index"])
+        return chunks[:safe_limit]
+
+    def delete_document(self, source: str) -> int:
+        """按来源删除文档的全部片段。"""
+        try:
+            data = self._vectorstore.get(where={"source": source})
+            ids = data.get("ids", []) or []
+            if ids:
+                self._vectorstore.delete(ids=ids)
+            return len(ids)
+        except Exception:
+            return 0
 
     def clear(self) -> None:
         """清空当前集合中的全部文档"""

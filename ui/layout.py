@@ -3,9 +3,11 @@ UI 交互界面层 —— Streamlit 页面布局与组件渲染
 提供侧边栏配置、聊天区域、资料来源展示等标准化组件
 """
 import html
-from typing import Dict, List
+from typing import Callable, Dict, List, Optional
 
 import streamlit as st
+
+from ui.workspaces import render_feedback_form, render_trace
 
 
 def render_sidebar(
@@ -49,7 +51,7 @@ def render_sidebar(
             )
 
             api_key = st.text_input(
-                "",
+                sidebar["api_title"],
                 type="password",
                 placeholder=sidebar["api_placeholder"],
                 help=sidebar["api_help"],
@@ -89,7 +91,7 @@ def render_sidebar(
             )
 
             uploaded_files = st.file_uploader(
-                "",
+                sidebar["upload_title"],
                 type=["txt", "pdf", "md"],
                 accept_multiple_files=True,
                 help=sidebar["upload_help"],
@@ -116,22 +118,19 @@ def render_sidebar(
                 ):
                     on_clear_kb()
 
-        with st.container(border=True):
-            st.markdown(
-                f"""
-                <div class="section-head">
-                    <p class="section-title">{sidebar["store_title"]}</p>
-                    <span class="section-tag">KB</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
+            kb_state = (
+                sidebar["store_empty"]
+                if kb_stats.get("doc_count", 0) == 0
+                else sidebar["api_ready"]
             )
-
             st.markdown(
                 f"""
-                <div class="count-card">
-                    <p class="count-value">{kb_stats.get("doc_count", 0)}</p>
-                    <p class="count-label">{sidebar["store_label"]}</p>
+                <div class="knowledge-stat">
+                    <div>
+                        <p class="count-value">{kb_stats.get("doc_count", 0)}</p>
+                        <p class="count-label">{sidebar["store_label"]}</p>
+                    </div>
+                    <span class="kb-state">{kb_state}</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -141,8 +140,6 @@ def render_sidebar(
                 st.caption(
                     f'{sidebar["store_collection"]}：{kb_stats.get("collection", "N/A")}'
                 )
-            else:
-                st.caption(sidebar["store_empty"])
 
         with st.container(border=True):
             st.markdown(
@@ -165,53 +162,86 @@ def render_sidebar(
 
         st.markdown(
             f"""
-            <div style="margin-top: 1.25rem; padding-top: 0.9rem; border-top: 1px solid #E2E8F0;">
-                <p style="font-size: 0.76rem; color: #94A3B8; text-align: center; margin: 0;">
-                    {sidebar["footer_line1"]}
-                </p>
-                <p style="font-size: 0.76rem; color: #94A3B8; text-align: center; margin: 0.15rem 0 0;">
-                    {sidebar["footer_line2"]}
-                </p>
+            <div class="sidebar-footer">
+                <p>{sidebar["footer_line1"]}</p>
+                <p>{sidebar["footer_line2"]}</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
 
-def render_chat_area(agent_ready: bool, kb_stats: Dict, ui_text: Dict) -> None:
+def render_chat_area(
+    agent_ready: bool,
+    kb_stats: Dict,
+    ui_text: Dict,
+    on_feedback: Optional[Callable] = None,
+) -> None:
     """渲染主区域聊天消息与顶部状态提示"""
     main = ui_text["main"]
     status = ui_text["status"]
     chat = ui_text["chat"]
 
-    st.title(main["title"])
-    st.caption(main["subtitle"])
-
     badges = "".join(
         f'<span class="capability-chip">{item}</span>' for item in main["capabilities"]
     )
-    st.markdown(f'<div class="capability-row">{badges}</div>', unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <section class="workspace-hero">
+            <p class="hero-eyebrow">{main["eyebrow"]}</p>
+            <h1 class="workspace-title">{main["title"]}</h1>
+            <p class="workspace-subtitle">{main["subtitle"]}</p>
+            <div class="capability-row">{badges}</div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
     if not agent_ready:
-        st.info(status["main_idle"])
+        status_class = "idle"
+        status_text = status["main_idle"]
     elif kb_stats.get("doc_count", 0) == 0:
-        st.info(status["main_ready_no_docs"])
+        status_class = "idle"
+        status_text = status["main_ready_no_docs"]
     else:
-        st.success(status["main_ready"])
+        status_class = "ready"
+        status_text = status["main_ready"]
 
-    for msg in st.session_state.get("messages", []):
+    st.markdown(
+        f"""
+        <div class="workspace-status {status_class}" role="status">
+            <span class="status-dot"></span>
+            <span>{status_text}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    previous_question = ""
+    for index, msg in enumerate(st.session_state.get("messages", [])):
         with st.chat_message(msg["role"]):
             if msg["role"] == "user":
                 st.markdown(html.escape(msg["content"]))
+                previous_question = msg["content"]
             else:
                 st.markdown(msg["content"])
-                if msg.get("thinking"):
+                if msg.get("trace"):
+                    with st.expander(chat["expander_thinking"], expanded=False):
+                        render_trace(msg["trace"])
+                elif msg.get("thinking"):
                     with st.expander(chat["expander_thinking"], expanded=False):
                         for i, step in enumerate(msg["thinking"], 1):
                             st.markdown(f"**{i}.** {step}")
                 if msg.get("sources"):
                     with st.expander(chat["expander_sources"], expanded=False):
                         render_sources(msg["sources"], ui_text)
+                if on_feedback:
+                    render_feedback_form(
+                        message=msg,
+                        question=previous_question,
+                        message_index=index,
+                        on_feedback=on_feedback,
+                    )
 
 
 def render_sources(sources: List[Dict], ui_text: Dict) -> None:
@@ -220,38 +250,54 @@ def render_sources(sources: List[Dict], ui_text: Dict) -> None:
         st.warning(ui_text["chat"]["no_sources"])
         return
 
-    cols = st.columns(min(len(sources), 3))
-    for i, src in enumerate(sources):
-        with cols[i % 3]:
-            score_color = "green" if src.get("score", 0) >= 0.7 else "orange"
-            with st.container(border=True):
-                st.markdown(f'**{src["source"]}**')
-                st.markdown(f'匹配度：:{score_color}[**{src["score"]:.1%}**]')
+    cards = []
+    for i, src in enumerate(sources, 1):
+        source_name = html.escape(str(src.get("source", "未知来源")))
+        score = float(src.get("score", 0))
+        cards.append(
+            f"""
+            <div class="source-card">
+                <span class="source-index">{i:02d}</span>
+                <span class="source-name">{source_name}</span>
+                <span class="source-score">匹配 {score:.1%}</span>
+            </div>
+            """
+        )
+    st.markdown(
+        f'<div class="source-list">{"".join(cards)}</div>',
+        unsafe_allow_html=True,
+    )
 
 
 def show_welcome(ui_text: Dict) -> None:
     """显示欢迎引导信息"""
     welcome = ui_text["welcome"]
-    _, center_col, _ = st.columns([1, 3, 1])
+    workflow_cards = "".join(
+        f"""
+        <div class="workflow-card">
+            <span class="workflow-number">{i:02d}</span>
+            <h3>{title}</h3>
+            <p>{desc}</p>
+        </div>
+        """
+        for i, (title, desc) in enumerate(welcome["steps"], 1)
+    )
+    scene_chips = "".join(
+        f'<span class="scene-chip">{item}</span>' for item in welcome["abilities"]
+    )
 
-    with center_col:
-        st.markdown(f"#### {welcome['title']}")
-        st.caption(welcome["subtitle"])
-        st.divider()
-        st.markdown(f"##### {welcome['steps_title']}")
-
-        for i, (title, desc) in enumerate(welcome["steps"], 1):
-            col_left, col_right = st.columns([1, 12])
-            with col_left:
-                st.markdown(f"**{i}**")
-            with col_right:
-                st.markdown(f"**{title}**  \n{desc}")
-
-        st.divider()
-        st.markdown(f"##### {welcome['abilities_title']}")
-        ability_badges = "".join(
-            f'<span class="capability-chip">{item}</span>'
-            for item in welcome["abilities"]
-        )
-        st.markdown(f'<div class="capability-row">{ability_badges}</div>', unsafe_allow_html=True)
-        st.info(welcome["tip"])
+    st.markdown(
+        f"""
+        <section class="welcome-panel">
+            <p class="welcome-eyebrow">{welcome["eyebrow"]}</p>
+            <h2 class="welcome-title">{welcome["title"]}</h2>
+            <p class="welcome-subtitle">{welcome["subtitle"]}</p>
+            <div class="workflow-grid">{workflow_cards}</div>
+            <div class="welcome-footer">
+                <p class="welcome-tip">{welcome["tip"]}</p>
+                <div class="scene-row">{scene_chips}</div>
+            </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )

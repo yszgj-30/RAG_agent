@@ -1,15 +1,19 @@
-# 企业知识库 RAG 智能问答 Agent
+# KnowledgeOps Agent：企业知识运营与合规问答智能体
 
-《AI大模型》课程期末作业 —— 基于通义千问 + LangChain + Chroma + Streamlit 的检索增强生成问答系统
+基于通义千问、LangChain、LangGraph、Chroma、FastAPI 和 Streamlit 的企业知识运营智能体。项目不仅提供文档问答，还覆盖知识库管理、检索调试、Agent 轨迹、用户反馈和离线评测闭环。
 
 ## 功能概述
 
-- 🔑 侧边栏配置通义千问 API 密钥，一键初始化大模型连接
-- 📁 支持 TXT / PDF / Markdown 格式文档批量上传，自动构建私有知识库
-- 🧠 智能体自主规划任务、调用检索工具、校验答案质量
-- 💬 多轮对话记忆，支持连续追问与上下文理解
-- 📎 回答附带原文参考来源，知识库外内容如实反馈
-- 🎨 Streamlit 可视化界面，布局规整，适配演示录屏
+- 支持 TXT、PDF、Markdown 批量导入和结构感知切分
+- LangGraph 对问题分类，路由到普通对话或知识库问答
+- 通义千问通过原生 Tool Calling 选择检索工具，由 ToolNode 执行
+- 支持多轮记忆、回答来源和异常降级
+- 文档级知识库管理：统计、切块预览、单文档删除
+- Top-K 检索调试：召回片段、相似度和检索耗时
+- 结构化 Agent 轨迹：分类、工具选择、检索、生成和异常状态
+- 回答级反馈：满意度、改进意见和反馈汇总
+- 离线评测集：答案关键词、期望来源、通过率与平均耗时
+- 同时提供 Streamlit 工作台和 FastAPI 接口
 
 ## 环境要求
 
@@ -26,22 +30,56 @@ pip install -r requirements.txt
 
 ### 2. 启动系统
 
+启动 Streamlit 页面：
+
 ```bash
 streamlit run app.py
 ```
 
+或启动 FastAPI 后端：
+
+```powershell
+$env:DASHSCOPE_API_KEY="你的 API Key"
+uvicorn api_server:app --host 0.0.0.0 --port 8000 --reload
+```
+
+启动后可访问 `http://localhost:8000/docs` 调试接口。
+
+FastAPI 提供以下核心接口：
+
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| `GET` | `/health` | 健康检查 |
+| `POST` | `/api/v1/documents` | 上传 TXT / PDF / MD 并入库 |
+| `GET` | `/api/v1/documents` | 按来源查看文档和片段统计 |
+| `GET` | `/api/v1/documents/{source}/chunks` | 查看文档实际切块 |
+| `DELETE` | `/api/v1/documents/{source}` | 删除指定文档 |
+| `GET` | `/api/v1/knowledge-base` | 查询知识库状态 |
+| `DELETE` | `/api/v1/knowledge-base` | 清空知识库 |
+| `POST` | `/api/v1/chat` | 智能体对话，返回分类、来源和结构化轨迹 |
+| `POST` | `/api/v1/retrieval/debug` | 独立调试 Top-K 检索 |
+| `POST/GET` | `/api/v1/feedback` | 写入反馈并查看反馈看板 |
+| `POST` | `/api/v1/evaluations/cases` | 添加评测用例 |
+| `GET` | `/api/v1/evaluations` | 查看用例、运行记录和质量指标 |
+| `POST` | `/api/v1/evaluations/run` | 运行全部或指定评测用例 |
+| `DELETE` | `/api/v1/sessions/{session_id}` | 清空指定会话 |
+
 ### 3. 使用流程
 
 1. 浏览器打开 `http://localhost:8501`
-2. 左侧边栏输入 DashScope API Key，点击「初始化连接」
-3. 上传企业文档（支持 TXT/PDF/MD），点击「构建知识库」
-4. 在底部输入框提问，智能体自动检索知识库并回答
+2. 左侧边栏输入 DashScope API Key并连接模型
+3. 上传企业文档并导入知识库
+4. 在「知识库管理」检查切块结果
+5. 在「检索调试」验证召回质量
+6. 在「智能问答」提问并查看 Agent 轨迹和来源
+7. 在「评测与反馈」建立固定测试集并重复运行
 
 ## 项目结构
 
 ```
 RAGagent/
 ├── app.py                     # Streamlit 主程序入口
+├── api_server.py              # FastAPI 后端入口
 ├── requirements.txt           # Python 依赖清单
 ├── models/
 │   ├── __init__.py
@@ -59,9 +97,13 @@ RAGagent/
 ├── memory/
 │   ├── __init__.py
 │   └── manager.py             # 对话记忆管理器
+├── operations/
+│   ├── __init__.py
+│   └── store.py               # 反馈和评测 SQLite 数据仓库
 ├── ui/
 │   ├── __init__.py
-│   └── layout.py              # Streamlit UI 组件
+│   ├── layout.py              # 问答与侧栏组件
+│   └── workspaces.py          # 管理、调试和评测工作台
 ├── chroma_db/                 # Chroma 本地持久化目录（自动创建）
 ├── README.md                  # 本文件
 ├── project_doc.md             # 项目说明文档
@@ -72,20 +114,44 @@ RAGagent/
 ## 技术架构
 
 ```
-用户 → Streamlit UI → RAG Agent → 通义千问 LLM
-                        ↓
-                   检索工具 (Tools)
-                        ↓
-                   Chroma 向量库
-                        ↓
-                   文档处理层
-                        ↓
-               TXT / PDF / MD 文件
+用户 → Streamlit / FastAPI → LangGraph 问题分类
+                              ├─ 普通对话 → 通义千问
+                              └─ 知识库问答
+                                   ↓
+                         模型生成 tool_calls
+                                   ↓
+                    ToolNode → 检索工具 → Chroma
+                                   ↓
+                         基于资料生成回答
+                                   ↓
+                来源展示 + 结构化轨迹 + 多轮记忆
+
+知识运营侧：
+
+文档管理 → 切块预览 → 检索调试 → 固定评测集
+     ↑                                  ↓
+     └──────── 用户反馈与质量指标 ────────┘
 ```
 
 ## 注意事项
 
 - 首次运行需确保网络畅通，DashScope API 需要公网访问
 - 知识库数据保存在 `chroma_db/` 目录，清空知识库将删除全部向量数据
-- 对话记录仅保存在浏览器会话中，刷新页面后聊天记录会丢失（知识库数据保留）
-- 推荐使用 `qwen-plus` 模型以获得最佳性价比，可修改 `app.py` 中 `model_name` 切换模型
+- 对话记录保存在进程内存中；Streamlit 刷新或 FastAPI 服务重启后会丢失（知识库数据保留）
+- FastAPI 使用 `session_id` 隔离对话，不提供时会自动生成
+- 默认模型为 `qwen3.7-plus`；FastAPI 可通过 `QWEN_MODEL` 环境变量切换模型
+- 用户反馈与评测记录默认保存在 `~/.rag_agent/operations.db`
+- 可通过 `RAG_AGENT_DATA_DIR` 指定运营数据目录
+
+## 验证
+
+```bash
+python -m pytest -q
+python -m pip check
+```
+
+测试覆盖 Agent 路由与 Tool Calling、FastAPI 接口、反馈存储和评测记录。
+
+## 开源参考说明
+
+产品信息架构参考了 RAGFlow、MaxKB 和 LangChain Agent Chat UI 的公开交互模式；本仓库未复制这些项目的源码，LangGraph、FastAPI、知识库管理、反馈与评测实现均位于本仓库。
