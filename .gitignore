@@ -35,6 +35,8 @@ wheels/
 
 # Chroma DB (本地数据库)
 chroma_db/
+.rag_agent/
+operations.db
 
 # Streamlit
 .streamlit/secrets.toml
