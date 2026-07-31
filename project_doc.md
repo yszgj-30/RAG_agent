@@ -40,7 +40,10 @@ RAG的工作流程可分为三个核心阶段：
 
 **（1）文档索引阶段**：将企业文档经过文本提取、清洗和结构感知切分后，通过嵌入模型（Embedding Model）将每个文本块映射为高维向量空间中的稠密向量表示，存入向量数据库建立索引。向量化表示能够捕获文本的深层语义信息，使得语义相近的文本在向量空间中距离更近。
 
-**（2）查询检索阶段**：当用户提出问题时，系统将问题文本同样通过嵌入模型转换为查询向量，在向量数据库中执行近似最近邻搜索（Approximate Nearest Neighbor, ANN），根据余弦相似度或欧氏距离召回与查询最相关的Top-K文档片段。
+**（2）查询检索阶段**：当用户提出问题时，系统先通过 Chroma
+向量检索召回 Top-6 候选片段，再对候选集执行适配中英混合文本的字符级
+BM25 排名，最后通过 RRF 融合语义与词法排名并输出 Top-3。该方案在保留
+语义召回能力的同时，提高了产品型号、操作步骤和精确数值问题的答案块排名。
 
 **（3）增强生成阶段**：将检索到的文档片段与用户原始问题组合为增强提示词，输入大语言模型进行生成。模型综合考量问题意图与参考资料内容，生成信息准确、来源可溯的答案。
 
@@ -129,7 +132,12 @@ Chroma是一款开源的轻量级向量数据库，专为AI应用场景设计。
 
 ### 4.3 向量存储层 —— VectorStore
 
-向量存储层封装了Chroma向量数据库的完整操作接口。使用通义千问text-embedding-v2模型通过OpenAI兼容端点生成文档嵌入向量。核心功能包括：`add_documents()`批量写入文本块及其元数据；`similarity_search()`执行语义相似度检索并返回带相关度评分的Top-K结果；`search_as_context()`将检索结果格式化为可直接注入LLM的参考上下文文本；`clear()`清空集合中的全部文档；`get_stats()`获取向量库统计信息。Chroma数据默认持久化在项目目录下的chroma_db文件夹中，重启后自动恢复。
+向量存储层封装了Chroma向量数据库的完整操作接口。默认使用通义千问
+text-embedding-v2，也支持注入本地 Ollama Embedding。核心功能包括：
+`add_documents()` 批量写入文本块及元数据；`similarity_search()` 保留纯向量
+基线；`hybrid_search()` 对向量候选执行字符级 BM25 与 RRF 融合；
+`clear()` 清空集合；`get_stats()` 获取向量库统计信息。Chroma 数据默认
+持久化在项目目录下的 chroma_db 文件夹中。
 
 ### 4.4 Agent调度层 —— RAGAgent
 
@@ -137,7 +145,9 @@ Agent调度层是系统的核心智能体引擎，由LangGraph状态图组织：
 
 **分类与路由阶段**：`_classify()`将问题分类为`chat`或`knowledge`。分类模型异常时，`_fallback_intent()`使用保守规则降级。
 
-**工具调用阶段**：`_request_tool()`调用绑定检索工具的模型生成`tool_calls`，随后由LangGraph `ToolNode`执行`retrieve_knowledge`，获取Top-K文档片段及结构化来源信息。
+**工具调用阶段**：`_request_tool()` 调用绑定检索工具的模型生成
+`tool_calls`，随后由 LangGraph `ToolNode` 执行 `retrieve_knowledge`，
+从 Top-6 向量候选中融合输出 Top-3 文档片段及结构化来源信息。
 
 **回答与降级阶段**：普通对话由`_chat()`生成；知识库回答由`_knowledge_answer()`严格依据工具结果生成。工具或生成失败时进入`_error()`节点。
 
