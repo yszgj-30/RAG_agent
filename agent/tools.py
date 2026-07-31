@@ -23,7 +23,7 @@ def create_retrieval_tool(store) -> Callable:
                 [],
             )
 
-        results = store.similarity_search(query, k=6)
+        results = store.hybrid_search(query, k=3, candidate_k=6)
         if not results:
             return (
                 "未在知识库中检索到相关内容，请尝试调整问题或补充文档。",

@@ -1,0 +1,406 @@
+{
+  "version": "1.0",
+  "description": "基于仓库中五份业务文档人工整理的可复现评测集，包含 40 条有答案问题和 10 条知识库外问题。",
+  "cases": [
+    {
+      "id": "employee-01",
+      "category": "员工制度",
+      "question": "新员工的试用期是多长时间？",
+      "answerable": true,
+      "expected_source": "企业员工手册.txt",
+      "expected_terms": [["三个月", "3个月"]]
+    },
+    {
+      "id": "employee-02",
+      "category": "员工制度",
+      "question": "正式员工主动离职需要提前多少天提交书面申请？",
+      "answerable": true,
+      "expected_source": "企业员工手册.txt",
+      "expected_terms": [["三十日", "30日", "30天"], ["书面"]]
+    },
+    {
+      "id": "employee-03",
+      "category": "员工制度",
+      "question": "离职手续办完后，公司最迟多久结清工资和报销款？",
+      "answerable": true,
+      "expected_source": "企业员工手册.txt",
+      "expected_terms": [["十五个工作日", "15个工作日"]]
+    },
+    {
+      "id": "employee-04",
+      "category": "员工制度",
+      "question": "公司和员工各自按什么比例缴纳住房公积金？",
+      "answerable": true,
+      "expected_source": "企业员工手册.txt",
+      "expected_terms": [["百分之十二", "12%"]]
+    },
+    {
+      "id": "employee-05",
+      "category": "员工制度",
+      "question": "春节、端午节和中秋节的节日福利标准是多少？",
+      "answerable": true,
+      "expected_source": "企业员工手册.txt",
+      "expected_terms": [["五百元", "500元"], ["每人每次"]]
+    },
+    {
+      "id": "employee-06",
+      "category": "员工制度",
+      "question": "员工每年可享受多少外部培训补贴？",
+      "answerable": true,
+      "expected_source": "企业员工手册.txt",
+      "expected_terms": [["三千元", "3000元"]]
+    },
+    {
+      "id": "employee-07",
+      "category": "员工制度",
+      "question": "绩效考核中工作业绩占多大权重？",
+      "answerable": true,
+      "expected_source": "企业员工手册.txt",
+      "expected_terms": [["百分之四十", "40%"]]
+    },
+    {
+      "id": "employee-08",
+      "category": "员工制度",
+      "question": "晋升高级工程师需要在中级工程师岗位工作多久，并满足什么考核条件？",
+      "answerable": true,
+      "expected_source": "企业员工手册.txt",
+      "expected_terms": [["三年", "3年"], ["两年为优秀", "2年为优秀"], ["良好"]]
+    },
+    {
+      "id": "reimburse-01",
+      "category": "报销制度",
+      "question": "费用发生后最迟应在多长时间内申请报销？",
+      "answerable": true,
+      "expected_source": "报销流程规范.txt",
+      "expected_terms": [["一个月", "1个月"]]
+    },
+    {
+      "id": "reimburse-02",
+      "category": "报销制度",
+      "question": "普通员工出差的单程机票价格上限是多少？",
+      "answerable": true,
+      "expected_source": "报销流程规范.txt",
+      "expected_terms": [["一千五百元", "1500元"]]
+    },
+    {
+      "id": "reimburse-03",
+      "category": "报销制度",
+      "question": "普通员工在一线城市出差时，每天住宿费上限是多少？",
+      "answerable": true,
+      "expected_source": "报销流程规范.txt",
+      "expected_terms": [["四百元", "400元"]]
+    },
+    {
+      "id": "reimburse-04",
+      "category": "报销制度",
+      "question": "员工出差返回后应在几个工作日内提交差旅费报销材料？",
+      "answerable": true,
+      "expected_source": "报销流程规范.txt",
+      "expected_terms": [["五个工作日", "5个工作日"]]
+    },
+    {
+      "id": "reimburse-05",
+      "category": "报销制度",
+      "question": "招待重要客户时，人均餐饮费每次最高多少元？",
+      "answerable": true,
+      "expected_source": "报销流程规范.txt",
+      "expected_terms": [["三百元", "300元"]]
+    },
+    {
+      "id": "reimburse-06",
+      "category": "报销制度",
+      "question": "对外礼品单次价值超过两千元时，需要哪些人员或部门审批？",
+      "answerable": true,
+      "expected_source": "报销流程规范.txt",
+      "expected_terms": [["部门负责人"], ["财务部"], ["总经理"]]
+    },
+    {
+      "id": "reimburse-07",
+      "category": "报销制度",
+      "question": "普通员工每月交通费报销上限是多少？",
+      "answerable": true,
+      "expected_source": "报销流程规范.txt",
+      "expected_terms": [["五百元", "500元"]]
+    },
+    {
+      "id": "reimburse-08",
+      "category": "报销制度",
+      "question": "单笔报销金额超过十万元时由谁审批？",
+      "answerable": true,
+      "expected_source": "报销流程规范.txt",
+      "expected_terms": [["总经理办公会"]]
+    },
+    {
+      "id": "attendance-01",
+      "category": "考勤制度",
+      "question": "公司总部的两台指纹打卡机分别安装在哪里？",
+      "answerable": true,
+      "expected_source": "考勤管理制度.txt",
+      "expected_terms": [["一楼大堂"], ["八楼电梯口"]]
+    },
+    {
+      "id": "attendance-02",
+      "category": "考勤制度",
+      "question": "员工发现考勤记录有误，应在多久内向哪个部门申诉？",
+      "answerable": true,
+      "expected_source": "考勤管理制度.txt",
+      "expected_terms": [["三个工作日", "3个工作日"], ["行政部"]]
+    },
+    {
+      "id": "attendance-03",
+      "category": "考勤制度",
+      "question": "员工第一次被发现代打卡时，代打卡双方如何处理？",
+      "answerable": true,
+      "expected_source": "考勤管理制度.txt",
+      "expected_terms": [["旷工半天"], ["代替打卡者", "代打卡者", "双方"], ["被代打卡者", "双方"]]
+    },
+    {
+      "id": "attendance-04",
+      "category": "考勤制度",
+      "question": "病假超过三天需要哪一级医院开具证明？",
+      "answerable": true,
+      "expected_source": "考勤管理制度.txt",
+      "expected_terms": [["二级甲等", "二甲"]]
+    },
+    {
+      "id": "attendance-05",
+      "category": "考勤制度",
+      "question": "员工请假超过七天需要经过哪些审批？",
+      "answerable": true,
+      "expected_source": "考勤管理制度.txt",
+      "expected_terms": [["部门负责人"], ["人力资源部"], ["总经理"]]
+    },
+    {
+      "id": "attendance-06",
+      "category": "考勤制度",
+      "question": "员工当月第四次迟到会被扣罚多少元？",
+      "answerable": true,
+      "expected_source": "考勤管理制度.txt",
+      "expected_terms": [["一百元", "100元"]]
+    },
+    {
+      "id": "attendance-07",
+      "category": "考勤制度",
+      "question": "紧急任务无法提前申请加班时，最迟多久补办申请？",
+      "answerable": true,
+      "expected_source": "考勤管理制度.txt",
+      "expected_terms": [["两个工作日", "2个工作日"]]
+    },
+    {
+      "id": "attendance-08",
+      "category": "考勤制度",
+      "question": "员工到北京出差时，每人每天的出差补贴是多少？",
+      "answerable": true,
+      "expected_source": "考勤管理制度.txt",
+      "expected_terms": [["三百元", "300元"]]
+    },
+    {
+      "id": "robot-01",
+      "category": "扫地机器人",
+      "question": "S200 扫地机器人的电池容量是多少？",
+      "answerable": true,
+      "expected_source": "智能扫地机器人使用指南.md",
+      "expected_terms": [["5200mAh", "5200毫安时"]]
+    },
+    {
+      "id": "robot-02",
+      "category": "扫地机器人",
+      "question": "S200 的最大吸力是多少？",
+      "answerable": true,
+      "expected_source": "智能扫地机器人使用指南.md",
+      "expected_terms": [["4000Pa"]]
+    },
+    {
+      "id": "robot-03",
+      "category": "扫地机器人",
+      "question": "S200 首次充电建议至少充多少小时？",
+      "answerable": true,
+      "expected_source": "智能扫地机器人使用指南.md",
+      "expected_terms": [["8小时", "八小时"]]
+    },
+    {
+      "id": "robot-04",
+      "category": "扫地机器人",
+      "question": "自动清扫时电量低于多少会回充，充到多少后继续清扫？",
+      "answerable": true,
+      "expected_source": "智能扫地机器人使用指南.md",
+      "expected_terms": [["20%"], ["80%"]]
+    },
+    {
+      "id": "robot-05",
+      "category": "扫地机器人",
+      "question": "S200 最多可以保存几张楼层地图？",
+      "answerable": true,
+      "expected_source": "智能扫地机器人使用指南.md",
+      "expected_terms": [["5张", "五张"]]
+    },
+    {
+      "id": "robot-06",
+      "category": "扫地机器人",
+      "question": "连接 S200 应下载什么 APP，WiFi 需要使用哪个频段？",
+      "answerable": true,
+      "expected_source": "智能扫地机器人使用指南.md",
+      "expected_terms": [["智清洁家"], ["2.4GHz", "2.4G"]]
+    },
+    {
+      "id": "robot-07",
+      "category": "扫地机器人",
+      "question": "尘盒建议每清扫多少次后清理一次？",
+      "answerable": true,
+      "expected_source": "智能扫地机器人使用指南.md",
+      "expected_terms": [["3-5次", "3到5次", "三到五次"]]
+    },
+    {
+      "id": "robot-08",
+      "category": "扫地机器人",
+      "question": "S200 的 APP 无法连接设备时，如何重置 WiFi？",
+      "answerable": true,
+      "expected_source": "智能扫地机器人使用指南.md",
+      "expected_terms": [["回充键"], ["5秒", "五秒"]]
+    },
+    {
+      "id": "camera-01",
+      "category": "智能摄像头",
+      "question": "智能摄像头 Pro X1 的完整产品型号是什么？",
+      "answerable": true,
+      "expected_source": "智能摄像头产品手册.pdf",
+      "expected_terms": [["Pro X1-4K"]]
+    },
+    {
+      "id": "camera-02",
+      "category": "智能摄像头",
+      "question": "Pro X1 本地最多可以存储多少张人脸数据？",
+      "answerable": true,
+      "expected_source": "智能摄像头产品手册.pdf",
+      "expected_terms": [["2000张", "2000"]]
+    },
+    {
+      "id": "camera-03",
+      "category": "智能摄像头",
+      "question": "Pro X1 支持的 MicroSD 卡最大容量是多少？",
+      "answerable": true,
+      "expected_source": "智能摄像头产品手册.pdf",
+      "expected_terms": [["256G", "256GB"]]
+    },
+    {
+      "id": "camera-04",
+      "category": "智能摄像头",
+      "question": "为了获得最佳监控和人脸识别效果，Pro X1 建议安装在多高的位置？",
+      "answerable": true,
+      "expected_source": "智能摄像头产品手册.pdf",
+      "expected_terms": [["2.5米"], ["3.5米"]]
+    },
+    {
+      "id": "camera-05",
+      "category": "智能摄像头",
+      "question": "人脸识别误报率高时，建议将相似度阈值调到什么范围？",
+      "answerable": true,
+      "expected_source": "智能摄像头产品手册.pdf",
+      "expected_terms": [["80%"], ["85%"]]
+    },
+    {
+      "id": "camera-06",
+      "category": "智能摄像头",
+      "question": "Pro X1 设备离线时，如何恢复出厂设置？",
+      "answerable": true,
+      "expected_source": "智能摄像头产品手册.pdf",
+      "expected_terms": [["复位键"], ["10秒", "十秒"]]
+    },
+    {
+      "id": "camera-07",
+      "category": "智能摄像头",
+      "question": "Pro X1 云存储标准版的存储时长和年费分别是多少？",
+      "answerable": true,
+      "expected_source": "智能摄像头产品手册.pdf",
+      "expected_terms": [["30天", "三十天"], ["399"]]
+    },
+    {
+      "id": "camera-08",
+      "category": "智能摄像头",
+      "question": "Pro X1 多人观看时，同一账号和单个设备分别允许多少并发访问？",
+      "answerable": true,
+      "expected_source": "智能摄像头产品手册.pdf",
+      "expected_terms": [["3台设备", "3台"], ["5个用户", "5人"]]
+    },
+    {
+      "id": "unknown-01",
+      "category": "知识库外",
+      "question": "公司食堂下周一的午餐菜单是什么？",
+      "answerable": false,
+      "expected_source": null,
+      "expected_terms": []
+    },
+    {
+      "id": "unknown-02",
+      "category": "知识库外",
+      "question": "公司 2025 年的营业收入和净利润分别是多少？",
+      "answerable": false,
+      "expected_source": null,
+      "expected_terms": []
+    },
+    {
+      "id": "unknown-03",
+      "category": "知识库外",
+      "question": "智能科技有限公司的股票代码是什么？",
+      "answerable": false,
+      "expected_source": null,
+      "expected_terms": []
+    },
+    {
+      "id": "unknown-04",
+      "category": "知识库外",
+      "question": "Pro X1 是否支持 Apple HomeKit？具体配对步骤是什么？",
+      "answerable": false,
+      "expected_source": null,
+      "expected_terms": []
+    },
+    {
+      "id": "unknown-05",
+      "category": "知识库外",
+      "question": "S200 支持哪些品牌的语音助手，应该如何绑定？",
+      "answerable": false,
+      "expected_source": null,
+      "expected_terms": []
+    },
+    {
+      "id": "unknown-06",
+      "category": "知识库外",
+      "question": "海外出差报销采用哪一天的外汇牌价？",
+      "answerable": false,
+      "expected_source": null,
+      "expected_terms": []
+    },
+    {
+      "id": "unknown-07",
+      "category": "知识库外",
+      "question": "公司允许员工每周在家办公几天？",
+      "answerable": false,
+      "expected_source": null,
+      "expected_terms": []
+    },
+    {
+      "id": "unknown-08",
+      "category": "知识库外",
+      "question": "Pro X1 内置电池容量是多少，断电后可以工作多久？",
+      "answerable": false,
+      "expected_source": null,
+      "expected_terms": []
+    },
+    {
+      "id": "unknown-09",
+      "category": "知识库外",
+      "question": "S200 自动集尘站的尘袋容量和更换周期是多少？",
+      "answerable": false,
+      "expected_source": null,
+      "expected_terms": []
+    },
+    {
+      "id": "unknown-10",
+      "category": "知识库外",
+      "question": "购买扫地机器人后通常几天送达，使用哪家快递？",
+      "answerable": false,
+      "expected_source": null,
+      "expected_terms": []
+    }
+  ]
+}

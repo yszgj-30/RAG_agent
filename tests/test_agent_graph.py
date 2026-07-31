@@ -61,7 +61,7 @@ class FakeVectorStore:
     def is_empty(self):
         return self.empty
 
-    def similarity_search(self, query, k=6):
+    def hybrid_search(self, query, k=3, candidate_k=6):
         self.queries.append(query)
         if self.fail:
             raise RuntimeError("vector database unavailable")

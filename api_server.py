@@ -174,7 +174,11 @@ class RAGService:
 
     def debug_retrieval(self, query: str, top_k: int = 6) -> Dict:
         started = time.perf_counter()
-        results = self.vector_store.similarity_search(query, k=top_k)
+        results = self.vector_store.hybrid_search(
+            query,
+            k=top_k,
+            candidate_k=max(top_k * 2, 6),
+        )
         latency_ms = round((time.perf_counter() - started) * 1000, 2)
         return {
             "query": query,
